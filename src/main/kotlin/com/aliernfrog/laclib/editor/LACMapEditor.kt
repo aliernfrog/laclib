@@ -17,9 +17,9 @@ class LACMapEditor(
     content: String
 ) {
     private var mapLines = content.split("\n").toMutableList()
-    val mapRoles: MutableList<String> = mutableListOf()
-    val mapOptions: MutableList<LACMapOption> = mutableListOf()
-    val replacableObjects: MutableList<LACMapObject> = mutableListOf()
+    val mapRoles = mutableListOf<String>()
+    val mapOptions = mutableListOf<LACMapOption>()
+    val replacableObjects = mutableListOf<LACMapObject>()
 
     private var serverNameLine: Int? = null
     private var mapTypeLine: Int? = null
