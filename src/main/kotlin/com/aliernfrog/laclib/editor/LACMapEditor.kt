@@ -17,9 +17,11 @@ class LACMapEditor(
     content: String
 ) {
     private var mapLines = content.split("\n").toMutableList()
-    val mapRoles = mutableListOf<String>()
-    val mapOptions = mutableListOf<LACMapOption>()
-    val replacableObjects = mutableListOf<LACMapObject>()
+    var serverName: String? = null
+    var mapType: Int? = null
+    var mapRoles = mutableListOf<String>()
+    var mapOptions = mutableListOf<LACMapOption>()
+    var replacableObjects = mutableListOf<LACMapObject>()
 
     private var serverNameLine: Int? = null
     private var mapTypeLine: Int? = null
@@ -125,5 +127,28 @@ class LACMapEditor(
      */
     fun deleteRole(role: String) {
         mapRoles.remove(role)
+    }
+
+    /**
+     * Returns the current content.
+     */
+    fun getCurrentContent(): String {
+        return mapLines.joinToString("\n")
+    }
+
+    /**
+     * Applies changes to map content and returns the new content.
+     */
+    fun applyChanges(): String {
+        if (serverNameLine != null && serverName != null)
+            mapLines[serverNameLine!!] = LACMapLineType.SERVER_NAME.setValue(serverName!!)
+        if (mapTypeLine != null && mapType != null)
+            mapLines[mapTypeLine!!] = LACMapLineType.MAP_TYPE.setValue(mapType.toString())
+        if (mapRolesLine != null)
+            mapLines[mapRolesLine!!] = LACMapLineType.ROLES_LIST.setValue(mapRoles.joinToString(",").plus(","))
+        mapOptions.forEach { option ->
+            mapLines[option.line] = LACMapLineType.OPTION_GENERAL.setValue(option.value, option.label)
+        }
+        return getCurrentContent()
     }
 }
