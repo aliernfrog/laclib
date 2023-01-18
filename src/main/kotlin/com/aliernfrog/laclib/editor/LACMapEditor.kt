@@ -7,6 +7,7 @@ import com.aliernfrog.laclib.enum.LACMapLineType
 import com.aliernfrog.laclib.enum.LACMapOptionType
 import com.aliernfrog.laclib.util.ILLEGAL_ROLE_CHARS
 import com.aliernfrog.laclib.util.LACLibUtil
+import com.aliernfrog.laclib.util.extension.matchesLine
 
 /**
  * Initializes a LAC map editor instance.
@@ -96,7 +97,7 @@ class LACMapEditor(
      */
     fun removeMatchingObjects(filter: LACMapObjectFilter): Int {
         val filtered = mapLines.filter { line ->
-            !LACLibUtil.lineMatchesObjectFilter(line, filter)
+            !filter.matchesLine(line)
         }.toMutableList()
         val removedObjects = mapLines.size - filtered.size
         mapLines = filtered
