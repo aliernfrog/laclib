@@ -2,7 +2,7 @@ package com.aliernfrog.laclib.data
 
 data class LACMapObjectFilter(
     val filterName: String,
-    var query: String = "",
-    var caseSensitive: Boolean = true,
-    var exactMatch: Boolean = true
+    val query: String = "",
+    val caseSensitive: Boolean = true,
+    val exactMatch: Boolean = true
 )
