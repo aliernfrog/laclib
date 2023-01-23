@@ -5,6 +5,7 @@ import com.aliernfrog.laclib.data.LACMapObjectFilter
 import com.aliernfrog.laclib.data.LACMapOption
 import com.aliernfrog.laclib.enum.LACMapLineType
 import com.aliernfrog.laclib.enum.LACMapOptionType
+import com.aliernfrog.laclib.enum.LACMapType
 import com.aliernfrog.laclib.util.ILLEGAL_ROLE_CHARS
 import com.aliernfrog.laclib.util.LACLibUtil
 import com.aliernfrog.laclib.util.extension.matchesLine
@@ -18,7 +19,7 @@ class LACMapEditor(
 ) {
     private var mapLines = content.split("\n").toMutableList()
     var serverName: String? = null
-    var mapType: Int? = null
+    var mapType: LACMapType? = null
     var mapRoles = mutableListOf<String>()
     var mapOptions = mutableListOf<LACMapOption>()
     var replacableObjects = mutableListOf<LACMapObject>()
@@ -34,6 +35,7 @@ class LACMapEditor(
                     serverNameLine = index
                 }
                 LACMapLineType.MAP_TYPE -> {
+                    mapType = LACMapType.values()[type.getValue(line).toInt()]
                     mapTypeLine = index
                 }
                 LACMapLineType.ROLES_LIST -> {
