@@ -130,7 +130,7 @@ class LACMapEditor(
     ) {
         val illegalChar = ILLEGAL_ROLE_CHARS.find { role.contains(it) }
         if (illegalChar != null) return onIllegalChar(illegalChar)
-        mapRoles.add(role)
+        mapRoles?.add(role)
         onSuccess()
     }
 
@@ -138,7 +138,7 @@ class LACMapEditor(
      * Removes [role] from role list.
      */
     fun deleteRole(role: String) {
-        mapRoles.remove(role)
+        mapRoles?.remove(role)
     }
 
     /**
@@ -156,7 +156,7 @@ class LACMapEditor(
             mapLines[serverNameLine!!] = LACMapLineType.SERVER_NAME.setValue(serverName!!)
         if (mapTypeLine != null && mapType != null)
             mapLines[mapTypeLine!!] = LACMapLineType.MAP_TYPE.setValue(mapType.toString())
-        if (mapRolesLine != null)
+        if (mapRolesLine != null && mapRoles != null)
             mapLines[mapRolesLine!!] = LACMapLineType.ROLES_LIST.setValue(mapRoles.joinToString(",").plus(","))
         mapOptions.forEach { option ->
             mapLines[option.line] = LACMapLineType.OPTION_GENERAL.setValue(option.value, option.label)
