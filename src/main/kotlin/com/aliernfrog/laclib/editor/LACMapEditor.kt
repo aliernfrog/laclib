@@ -155,7 +155,7 @@ class LACMapEditor(
         if (serverNameLine != null && serverName != null)
             mapLines[serverNameLine!!] = LACMapLineType.SERVER_NAME.setValue(serverName!!)
         if (mapTypeLine != null && mapType != null)
-            mapLines[mapTypeLine!!] = LACMapLineType.MAP_TYPE.setValue(mapType.toString())
+            mapLines[mapTypeLine!!] = LACMapLineType.MAP_TYPE.setValue(mapType!!.index.toString())
         if (mapRolesLine != null && mapRoles != null)
             mapLines[mapRolesLine!!] = LACMapLineType.ROLES_LIST.setValue(mapRoles!!.joinToString(",").plus(","))
         mapOptions.forEach { option ->
