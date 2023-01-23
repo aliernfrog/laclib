@@ -40,7 +40,7 @@ class LACMapEditor(
                     mapTypeLine = index
                 }
                 LACMapLineType.ROLES_LIST -> {
-                    mapRoles = type.getValue(line).removeSuffix(",").split(",").toList()
+                    mapRoles = type.getValue(line).removeSuffix(",").split(",").toMutableList()
                     mapRolesLine = index
                 }
                 LACMapLineType.OPTION_NUMBER -> mapOptions.add(
@@ -157,7 +157,7 @@ class LACMapEditor(
         if (mapTypeLine != null && mapType != null)
             mapLines[mapTypeLine!!] = LACMapLineType.MAP_TYPE.setValue(mapType.toString())
         if (mapRolesLine != null && mapRoles != null)
-            mapLines[mapRolesLine!!] = LACMapLineType.ROLES_LIST.setValue(mapRoles.joinToString(",").plus(","))
+            mapLines[mapRolesLine!!] = LACMapLineType.ROLES_LIST.setValue(mapRoles!!.joinToString(",").plus(","))
         mapOptions.forEach { option ->
             mapLines[option.line] = LACMapLineType.OPTION_GENERAL.setValue(option.value, option.label)
         }
