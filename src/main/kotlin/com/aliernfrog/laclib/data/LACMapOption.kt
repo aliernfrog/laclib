@@ -5,6 +5,6 @@ import com.aliernfrog.laclib.enum.LACMapOptionType
 data class LACMapOption(
     val type: LACMapOptionType,
     val label: String,
-    val value: String,
+    var value: String,
     val line: Int
 )
