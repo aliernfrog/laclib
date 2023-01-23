@@ -32,6 +32,7 @@ class LACMapEditor(
         mapLines.forEachIndexed { index, line ->
             when (val type = LACLibUtil.getEditorLineType(line)) {
                 LACMapLineType.SERVER_NAME -> {
+                    serverName = type.getValue(line)
                     serverNameLine = index
                 }
                 LACMapLineType.MAP_TYPE -> {
@@ -96,10 +97,19 @@ class LACMapEditor(
     }
 
     /**
+     * Returns a list of object lines matching given [filter].
+     */
+    fun getObjectsMatchingFilter(filter: LACMapObjectFilter): List<String> {
+        return mapLines.filter { line ->
+            filter.matchesLine(line)
+        }
+    }
+
+    /**
      * Removes objects matching [filter] from the map.
      * @return count of removed objects
      */
-    fun removeMatchingObjects(filter: LACMapObjectFilter): Int {
+    fun removeObjectsMatchingFilter(filter: LACMapObjectFilter): Int {
         val filtered = mapLines.filter { line ->
             !filter.matchesLine(line)
         }.toMutableList()
