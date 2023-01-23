@@ -20,7 +20,7 @@ class LACMapEditor(
     private var mapLines = content.split("\n").toMutableList()
     var serverName: String? = null
     var mapType: LACMapType? = null
-    var mapRoles = mutableListOf<String>()
+    var mapRoles: MutableList<String>? = null
     var mapOptions = mutableListOf<LACMapOption>()
     var replacableObjects = mutableListOf<LACMapObject>()
 
@@ -40,7 +40,7 @@ class LACMapEditor(
                     mapTypeLine = index
                 }
                 LACMapLineType.ROLES_LIST -> {
-                    mapRoles.addAll(type.getValue(line).removeSuffix(",").split(",").toList())
+                    mapRoles = type.getValue(line).removeSuffix(",").split(",").toList()
                     mapRolesLine = index
                 }
                 LACMapLineType.OPTION_NUMBER -> mapOptions.add(
