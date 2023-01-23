@@ -129,7 +129,7 @@ class LACMapEditor(
         onSuccess: () -> Unit
     ) {
         val illegalChar = ILLEGAL_ROLE_CHARS.find { role.contains(it) }
-        if (illegalChar != null) onIllegalChar(illegalChar)
+        if (illegalChar != null) return onIllegalChar(illegalChar)
         mapRoles.add(role)
         onSuccess()
     }
