@@ -40,10 +40,10 @@ class LACMapMerger(
      * Merges maps and returns the merged map content.
      * @param onNoEnoughMaps [Unit] to invoke when there is no enough maps to merge
      */
-    fun mergeMaps(onNoEnoughMaps: () -> Unit): String {
+    fun mergeMaps(onNoEnoughMaps: () -> Unit): String? {
         if (mapsToMerge.size < MAP_MERGER_MIN_REQUIRED_MAPS) {
             onNoEnoughMaps()
-            return ""
+            return null
         }
         val newMapLines = mutableListOf<String>()
         mapsToMerge.forEachIndexed { index, mapToMerge ->
