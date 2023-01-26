@@ -24,3 +24,5 @@ val DEFAULT_MAP_OBJECT_FILTERS = listOf(
         exactMatch = false
     )
 )
+
+const val MAP_MERGER_MIN_REQUIRED_MAPS = 2

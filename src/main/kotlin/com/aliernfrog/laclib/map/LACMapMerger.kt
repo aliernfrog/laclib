@@ -2,6 +2,7 @@ package com.aliernfrog.laclib.map
 
 import com.aliernfrog.laclib.data.LACMapToMerge
 import com.aliernfrog.laclib.util.LACLibUtil
+import com.aliernfrog.laclib.util.MAP_MERGER_MIN_REQUIRED_MAPS
 
 /**
  * Initializes a LAC map merger instance.
@@ -40,7 +41,7 @@ class LACMapMerger(
      * @param onNoEnoughMaps [Unit] to invoke when there is no enough maps to merge
      */
     fun mergeMaps(onNoEnoughMaps: () -> Unit): String {
-        if (mapsToMerge.size < 2) {
+        if (mapsToMerge.size < MAP_MERGER_MIN_REQUIRED_MAPS) {
             onNoEnoughMaps()
             return ""
         }
