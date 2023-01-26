@@ -1,4 +1,4 @@
-package com.aliernfrog.laclib.editor
+package com.aliernfrog.laclib.map
 
 import com.aliernfrog.laclib.data.LACMapObject
 import com.aliernfrog.laclib.data.LACMapObjectFilter
