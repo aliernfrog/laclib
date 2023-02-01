@@ -1,5 +1,6 @@
 package com.aliernfrog.laclib.map
 
+import com.aliernfrog.laclib.data.LACMapDownloadableMaterial
 import com.aliernfrog.laclib.data.LACMapObject
 import com.aliernfrog.laclib.data.LACMapObjectFilter
 import com.aliernfrog.laclib.data.LACMapOption
@@ -23,6 +24,7 @@ class LACMapEditor(
     var mapRoles: MutableList<String>? = null
     var mapOptions = mutableListOf<LACMapOption>()
     var replacableObjects = mutableListOf<LACMapObject>()
+    var downloadableMaterials = mutableListOf<LACMapDownloadableMaterial>()
 
     private var serverNameLine: Int? = null
     private var mapTypeLine: Int? = null
@@ -71,6 +73,27 @@ class LACMapEditor(
                         lineNumber = index,
                         canReplaceWith = objectReplacement
                     ))
+                }
+                LACMapLineType.DOWNLOADABLE_MATERIAL -> {
+                    val url = type.getValue(line)
+                    val name = url.split("/").last()
+                    val usedBy = mutableListOf<LACMapObject>()
+                    mapLines.forEachIndexed { index1, it ->
+                        val type1 = LACLibUtil.getEditorLineType(it)
+                        if (type1 == LACMapLineType.OBJECT && line.contains(" material{$name,")) {
+                            usedBy.add(LACMapObject(
+                                line = it,
+                                lineNumber = index1
+                            ))
+                        }
+                    }
+                    downloadableMaterials.add(
+                        LACMapDownloadableMaterial(
+                        url = url,
+                        name = name,
+                        usedBy = usedBy
+                    )
+                    )
                 }
                 else -> {}
             }
@@ -139,6 +162,24 @@ class LACMapEditor(
      */
     fun deleteRole(role: String) {
         mapRoles?.remove(role)
+    }
+
+    /**
+     * Removes downloadable material and all the objects using it.
+     * @param url URL of the material
+     * @return Count of objects that used the material, null if material was not found
+     */
+    fun removeDownloadableMaterial(url: String): Int? {
+        val material = downloadableMaterials.find { it.url == url } ?: return null
+        val usedBy = material.usedBy
+        usedBy.forEach { mapObject ->
+            mapLines.remove(mapObject.line)
+        }
+        mapLines.removeIf { line ->
+            val type = LACLibUtil.getEditorLineType(line)
+            type == LACMapLineType.DOWNLOADABLE_MATERIAL && line.contains(material.url)
+        }
+        return usedBy.size
     }
 
     /**
