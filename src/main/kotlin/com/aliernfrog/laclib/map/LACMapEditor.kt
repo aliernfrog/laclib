@@ -80,7 +80,7 @@ class LACMapEditor(
                     val usedBy = mutableListOf<LACMapObject>()
                     mapLines.forEachIndexed { index1, it ->
                         val type1 = LACLibUtil.getEditorLineType(it)
-                        if (type1 == LACMapLineType.OBJECT && line.contains(" material{$name,")) {
+                        if (type1 == LACMapLineType.OBJECT && it.contains(" material{$name,")) {
                             usedBy.add(LACMapObject(
                                 line = it,
                                 lineNumber = index1
