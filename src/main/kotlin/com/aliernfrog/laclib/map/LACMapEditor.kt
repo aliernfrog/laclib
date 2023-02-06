@@ -174,7 +174,8 @@ class LACMapEditor(
         val usedBy = material.usedBy
         usedBy.forEach { mapObject ->
             val objectIndex = mapLines.indexOf(mapObject.line)
-            val materialRemoved = mapObject.line.replace("material\\{.*,.*}".toRegex(), "")
+            // "}" not being escaped causes crash on Android devices
+            val materialRemoved = mapObject.line.replace("material\\{.*,.*\\}".toRegex(), "")
             if (objectIndex != -1) mapLines[objectIndex] = materialRemoved
         }
         mapLines.removeIf { line ->
