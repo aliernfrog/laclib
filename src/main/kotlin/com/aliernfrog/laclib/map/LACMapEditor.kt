@@ -182,6 +182,7 @@ class LACMapEditor(
             val type = LACLibUtil.getEditorLineType(line)
             type == LACMapLineType.DOWNLOADABLE_MATERIAL && line.contains(material.url)
         }
+        downloadableMaterials.remove(material)
         return usedBy.size
     }
 
