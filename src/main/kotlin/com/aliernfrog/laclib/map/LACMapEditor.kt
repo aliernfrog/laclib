@@ -165,7 +165,7 @@ class LACMapEditor(
     }
 
     /**
-     * Removes downloadable material and all the objects using it.
+     * Removes downloadable material and removes it from all the objects using it.
      * @param url URL of the material
      * @return Count of objects that used the material, null if material was not found
      */
@@ -173,7 +173,9 @@ class LACMapEditor(
         val material = downloadableMaterials.find { it.url == url } ?: return null
         val usedBy = material.usedBy
         usedBy.forEach { mapObject ->
-            mapLines.remove(mapObject.line)
+            val objectIndex = mapLines.indexOf(mapObject.line)
+            val materialRemoved = mapObject.line.replace("material\\{.*,.*}".toRegex(), "")
+            if (objectIndex != -1) mapLines[objectIndex] = materialRemoved
         }
         mapLines.removeIf { line ->
             val type = LACLibUtil.getEditorLineType(line)
