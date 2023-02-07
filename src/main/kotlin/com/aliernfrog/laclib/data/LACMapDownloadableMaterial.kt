@@ -8,7 +8,7 @@ data class LACMapDownloadableMaterial(
     val url: String,
 
     /**
-     * Name of the downlodadable material.
+     * Name of the downloadable material.
      */
     val name: String,
 
