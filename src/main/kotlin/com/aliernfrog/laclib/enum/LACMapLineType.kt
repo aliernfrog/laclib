@@ -114,9 +114,9 @@ enum class LACMapLineType(
      * Downloadable materials.
      */
     DOWNLOADABLE_MATERIAL {
-        override fun matches(line: String) = line.startsWith("Downloadable_Content_Material")
-
-        override fun getValue(line: String) = line
+        private val startsWith = "Downloadable_Content_Material|"
+        override fun matches(line: String) = line.startsWith(startsWith)
+        override fun getValue(line: String) = line.removePrefix(startsWith)
     },
 
     OPTION_GENERAL(ignoreWhenFiltering = true) {
