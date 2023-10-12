@@ -62,6 +62,7 @@ class LACLibUtil {
         /**
          * Merges object of [mapToMerge] based on options and returns the new object line.
          */
+        @Suppress("MemberVisibilityCanBePrivate")
         fun mergeLACObject(mapToMerge: LACMapToMerge, line: String): String {
             val split = line.split(":").toMutableList()
             val oldPosition = parseAsXYZ(split[1])!!
@@ -71,13 +72,14 @@ class LACLibUtil {
         }
 
         /**
-         * Parses the [string] as [XYZ]
+         * Parses the [string] as [XYZ].
          * @return [XYZ] if it can be parsed, null otherwise
          */
+        @Suppress("MemberVisibilityCanBePrivate")
         fun parseAsXYZ(string: String): XYZ? {
             val split = string
                 .split(",")
-                .map { it.replace(" ","") }
+                .map { it.replace(" ", "") }
                 .filter {
                     it.toDoubleOrNull() != null
                 }
