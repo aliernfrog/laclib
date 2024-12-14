@@ -14,7 +14,7 @@ class LACLibUtil {
          * @return [LACMapLineType] if known type, [LACMapLineType.UNKNOWN] otherwise
          */
         fun getEditorLineType(line: String): LACMapLineType {
-            return LACMapLineType.values().filter { !it.ignoreWhenFiltering }
+            return LACMapLineType.entries.filter { !it.ignoreWhenFiltering }
                 .find { it.matches(line) } ?: LACMapLineType.UNKNOWN
         }
 
@@ -24,7 +24,7 @@ class LACLibUtil {
          */
         fun findReplacementForObject(line: String): LACMapOldObject? {
             val objectName = line.split(":")[0]
-            return LACMapOldObject.values().find { it.objectName == objectName }
+            return LACMapOldObject.entries.find { it.objectName == objectName }
         }
 
         /**

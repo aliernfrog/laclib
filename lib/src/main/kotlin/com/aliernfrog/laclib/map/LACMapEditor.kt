@@ -15,6 +15,7 @@ import com.aliernfrog.laclib.util.extension.matchesLine
  * Initializes a LAC map editor instance.
  * @param content Content of the map
  */
+@Suppress("MemberVisibilityCanBePrivate", "unused")
 class LACMapEditor(
     content: String
 ) {
@@ -38,7 +39,7 @@ class LACMapEditor(
                     serverNameLine = index
                 }
                 LACMapLineType.MAP_TYPE -> {
-                    mapType = LACMapType.values()[type.getValue(line).toInt()]
+                    mapType = LACMapType.entries[type.getValue(line).toInt()]
                     mapTypeLine = index
                 }
                 LACMapLineType.ROLES_LIST -> {
@@ -92,8 +93,7 @@ class LACMapEditor(
                         url = url,
                         name = name,
                         usedBy = usedBy
-                    )
-                    )
+                    ))
                 }
                 else -> {}
             }

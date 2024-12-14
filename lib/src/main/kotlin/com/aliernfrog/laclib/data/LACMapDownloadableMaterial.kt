@@ -5,12 +5,12 @@ data class LACMapDownloadableMaterial(
     /**
      * URL of the downloadable material.
      */
-    val url: String,
+    var url: String,
 
     /**
      * Name of the downloadable material.
      */
-    val name: String,
+    var name: String,
 
     /**
      * List of [LACMapObject]s which use the material.

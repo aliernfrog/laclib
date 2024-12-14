@@ -1,1 +1,2 @@
-rootProject.name = "laclib"
+rootProject.name = "LACLib"
+include(":lib")

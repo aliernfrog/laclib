@@ -1,19 +1,11 @@
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.9.10"
-    `java-library`
-    `maven-publish`
+    id("java-library")
+    id("maven-publish")
+    alias(libs.plugins.kotlin.jvm) apply false
 }
 
-repositories {
-    mavenCentral()
-}
-
-afterEvaluate {
-    publishing {
-        publications {
-            register("java", MavenPublication::class) {
-                from(components["java"])
-            }
-        }
+allprojects {
+    repositories {
+        mavenCentral()
     }
 }
