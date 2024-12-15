@@ -22,9 +22,13 @@ import java.util.stream.IntStream
 @Suppress("MemberVisibilityCanBePrivate", "unused")
 class LACMapEditor(
     content: String,
-    loadInParallelBatchSize: Int = 10,
+    loadInParallelBatchSize: Int = DEFAULT_LOAD_IN_PARALLEL_BATCH_SIZE,
     private val onDebugLog: (String) -> Unit = {}
 ) {
+    companion object {
+        const val DEFAULT_LOAD_IN_PARALLEL_BATCH_SIZE = 10
+    }
+
     private var mapLines = content.split("\n").toMutableList()
     var serverName: String? = null
     var mapType: LACMapType? = null
