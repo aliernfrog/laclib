@@ -128,6 +128,9 @@ class LACMapEditor(
             processLine(index, line)
         }
 
+        mapOptions.sortBy { it.line }
+        downloadableMaterials.sortBy { it.line }
+
         downloadableMaterials.forEachIndexed { index, material ->
             downloadableMaterials[index] = material.copy(
                 usedBy = materialsLookupMap[material.name] ?: mutableListOf()

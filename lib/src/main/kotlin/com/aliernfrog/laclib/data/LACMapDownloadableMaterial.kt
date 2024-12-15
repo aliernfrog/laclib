@@ -15,5 +15,10 @@ data class LACMapDownloadableMaterial(
     /**
      * List of [LACMapObject]s which use the material.
      */
-    val usedBy: List<LACMapObject>
+    val usedBy: List<LACMapObject>,
+
+    /**
+     * Line of the material. This should only be used for sorting as it can change during editing.
+     */
+    internal val line: Int? = null
 )
