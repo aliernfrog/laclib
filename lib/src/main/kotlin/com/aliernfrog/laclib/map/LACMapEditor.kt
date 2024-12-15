@@ -92,7 +92,9 @@ class LACMapEditor(
                         usedBy = usedBy
                     ))
                 }
-                else -> {}
+                else -> {
+                    onDebugLog("unhandled line type: $type, line at $index: $line")
+                }
             }
         }
     }
@@ -131,9 +133,7 @@ class LACMapEditor(
      */
     fun removeObjectsMatchingFilter(filter: LACMapObjectFilter): Int {
         val filtered = mapLines.filter { line ->
-            val matches = filter.matchesLine(line)
-            onDebugLog("objectFilter: \"$line ->\" matches: $matches")
-            !matches
+            !filter.matchesLine(line)
         }.toMutableList()
         val removedObjects = mapLines.size - filtered.size
         mapLines = filtered
@@ -196,14 +196,25 @@ class LACMapEditor(
      * Applies changes to map content and returns the new content.
      */
     fun applyChanges(): String {
-        if (serverNameLine != null && serverName != null)
-            mapLines[serverNameLine!!] = LACMapLineType.SERVER_NAME.setValue(serverName!!)
-        if (mapTypeLine != null && mapType != null)
-            mapLines[mapTypeLine!!] = LACMapLineType.MAP_TYPE.setValue(mapType!!.index.toString())
-        if (mapRolesLine != null && mapRoles != null)
-            mapLines[mapRolesLine!!] = LACMapLineType.ROLES_LIST.setValue(mapRoles!!.joinToString(",").plus(","))
+        if (serverNameLine != null && serverName != null) {
+            val applied = LACMapLineType.SERVER_NAME.setValue(serverName!!)
+            onDebugLog("setting server name ($serverNameLine) ${mapLines[serverNameLine!!]} to -> $applied")
+            mapLines[serverNameLine!!] = applied
+        }
+        if (mapTypeLine != null && mapType != null) {
+            val applied = LACMapLineType.MAP_TYPE.setValue(mapType!!.index.toString())
+            onDebugLog("setting map type ($mapTypeLine) ${mapLines[mapTypeLine!!]} to -> $applied")
+            mapLines[mapTypeLine!!] = applied
+        }
+        if (mapRolesLine != null && mapRoles != null) {
+            val applied = LACMapLineType.ROLES_LIST.setValue(mapRoles!!.joinToString(",").plus(","))
+            onDebugLog("setting map roles ($mapRolesLine) ${mapLines[mapRolesLine!!]} to -> $applied")
+            mapLines[mapRolesLine!!] = applied
+        }
         mapOptions.forEach { option ->
-            mapLines[option.line] = LACMapLineType.OPTION_GENERAL.setValue(option.value, option.label)
+            val applied = LACMapLineType.OPTION_GENERAL.setValue(option.value, option.label)
+            onDebugLog("setting map option ${option.label}:${option.value} (${option.line}) to -> $applied")
+            mapLines[option.line] = applied
         }
         return getCurrentContent()
     }
