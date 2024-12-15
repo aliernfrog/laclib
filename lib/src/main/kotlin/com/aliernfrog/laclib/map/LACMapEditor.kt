@@ -10,25 +10,17 @@ import com.aliernfrog.laclib.enum.LACMapType
 import com.aliernfrog.laclib.util.ILLEGAL_ROLE_CHARS
 import com.aliernfrog.laclib.util.LACLibUtil
 import com.aliernfrog.laclib.util.extension.matchesLine
-import java.util.stream.Collectors
-import java.util.stream.IntStream
 
 /**
  * Initializes a LAC map editor instance.
  * @param content Content of the map
- * @param loadInParallelBatchSize Batch size when loading the map in parallel, pass 0 or less to disable parallel loading
  * @param onDebugLog [Unit] to invoke when debug log is received
  */
 @Suppress("MemberVisibilityCanBePrivate", "unused")
 class LACMapEditor(
     content: String,
-    loadInParallelBatchSize: Int = DEFAULT_LOAD_IN_PARALLEL_BATCH_SIZE,
     private val onDebugLog: (String) -> Unit = {}
 ) {
-    companion object {
-        const val DEFAULT_LOAD_IN_PARALLEL_BATCH_SIZE = 10
-    }
-
     private var mapLines = content.split("\n").toMutableList()
     var serverName: String? = null
     var mapType: LACMapType? = null
@@ -50,7 +42,7 @@ class LACMapEditor(
     init {
         val materialsLookupMap: MutableMap<String, MutableList<LACMapObject>> = mutableMapOf()
 
-        fun processLine(index: Int, line: String) {
+        mapLines.forEachIndexed { index, line ->
             when (val type = LACLibUtil.getEditorLineType(line)) {
                 LACMapLineType.SERVER_NAME -> {
                     serverName = type.getValue(line)
@@ -115,25 +107,6 @@ class LACMapEditor(
                 }
             }
         }
-
-        if (loadInParallelBatchSize > 0) {
-            IntStream.range(0, mapLines.size)
-                .parallel()
-                .mapToObj { index -> Pair(index, mapLines[index]) }
-                .parallel()
-                .collect(Collectors.groupingBy { it.first / loadInParallelBatchSize })
-                .forEach { (_, batch) ->
-                    batch.parallelStream().forEach { (index, line) ->
-                        processLine(index, line)
-                        onDebugLog("loaded line $index: $line")
-                    }
-                }
-        } else mapLines.forEachIndexed { index, line ->
-            processLine(index, line)
-        }
-
-        mapOptions.sortBy { it.line }
-        downloadableMaterials.sortBy { it.line }
 
         downloadableMaterials.forEachIndexed { index, material ->
             downloadableMaterials[index] = material.copy(
