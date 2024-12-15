@@ -30,12 +30,18 @@ class LACMapEditor(
     var mapType: LACMapType? = null
     var mapRoles: MutableList<String>? = null
     var mapOptions = mutableListOf<LACMapOption>()
-    var replacableObjects = mutableListOf<LACMapObject>()
+    var replaceableObjects = mutableListOf<LACMapObject>()
     var downloadableMaterials = mutableListOf<LACMapDownloadableMaterial>()
 
     private var serverNameLine: Int? = null
     private var mapTypeLine: Int? = null
     private var mapRolesLine: Int? = null
+
+    @Suppress("SpellCheckingInspection")
+    @Deprecated("This is a typo and will be removed in next major release. Use replaceableObjects instead.", ReplaceWith("replaceableObjects"))
+    var replacableObjects: MutableList<LACMapObject>
+        get() = replaceableObjects
+        set(value) { replaceableObjects = value }
 
     init {
         val materialsLookupMap: MutableMap<String, MutableList<LACMapObject>> = mutableMapOf()
@@ -78,7 +84,7 @@ class LACMapEditor(
                         lineNumber = index,
                         canReplaceWith = LACLibUtil.findReplacementForObject(line)
                     )
-                    if (mapObject.canReplaceWith != null) replacableObjects.add(mapObject)
+                    if (mapObject.canReplaceWith != null) replaceableObjects.add(mapObject)
 
                     if (line.contains(" material{")) {
                         val regex = Regex("material\\{(.+?)\\}")
@@ -131,12 +137,12 @@ class LACMapEditor(
     }
 
     /**
-     * Replaces replacable objects.
+     * Replaces replaceable objects.
      * @return count of replaced objects
      */
     fun replaceOldObjects(): Int {
-        val replacedCount = replacableObjects.size
-        replacableObjects.forEach { mapObject ->
+        val replacedCount = replaceableObjects.size
+        replaceableObjects.forEach { mapObject ->
             val split = mapObject.line.split(":").toMutableList()
             val replacement = mapObject.canReplaceWith!!
             if (split.size < 4) split.add(3, "1.0,1.0,1.0")
@@ -145,7 +151,7 @@ class LACMapEditor(
             if (replacement.replaceColor != null) split.add(replacement.replaceColor)
             mapLines[mapObject.lineNumber] = split.joinToString(":")
         }
-        replacableObjects.clear()
+        replaceableObjects.clear()
         return replacedCount
     }
 
