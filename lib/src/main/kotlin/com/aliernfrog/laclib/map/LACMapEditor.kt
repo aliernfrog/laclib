@@ -10,14 +10,19 @@ import com.aliernfrog.laclib.enum.LACMapType
 import com.aliernfrog.laclib.util.ILLEGAL_ROLE_CHARS
 import com.aliernfrog.laclib.util.LACLibUtil
 import com.aliernfrog.laclib.util.extension.matchesLine
+import java.util.stream.Collectors
+import java.util.stream.IntStream
 
 /**
  * Initializes a LAC map editor instance.
  * @param content Content of the map
+ * @param loadInParallelBatchSize Batch size when loading the map in parallel, pass 0 or less to disable parallel loading
+ * @param onDebugLog [Unit] to invoke when debug log is received
  */
 @Suppress("MemberVisibilityCanBePrivate", "unused")
 class LACMapEditor(
     content: String,
+    loadInParallelBatchSize: Int = 10,
     private val onDebugLog: (String) -> Unit = {}
 ) {
     private var mapLines = content.split("\n").toMutableList()
@@ -33,7 +38,9 @@ class LACMapEditor(
     private var mapRolesLine: Int? = null
 
     init {
-        mapLines.forEachIndexed { index, line ->
+        val materialsLookupMap: MutableMap<String, MutableList<LACMapObject>> = mutableMapOf()
+
+        fun processLine(index: Int, line: String) {
             when (val type = LACLibUtil.getEditorLineType(line)) {
                 LACMapLineType.SERVER_NAME -> {
                     serverName = type.getValue(line)
@@ -66,30 +73,31 @@ class LACMapEditor(
                     line = index
                 ))
                 LACMapLineType.OBJECT -> {
-                    val objectReplacement = LACLibUtil.findReplacementForObject(line)
-                    if (objectReplacement != null) replacableObjects.add(LACMapObject(
+                    val mapObject = LACMapObject(
                         line = line,
                         lineNumber = index,
-                        canReplaceWith = objectReplacement
-                    ))
+                        canReplaceWith = LACLibUtil.findReplacementForObject(line)
+                    )
+                    if (mapObject.canReplaceWith != null) replacableObjects.add(mapObject)
+
+                    if (line.contains(" material{")) {
+                        val regex = Regex("material\\{(.+?)\\}")
+                        val matchResult = regex.find(line)
+                        val materialProps = matchResult?.groups?.get(1)?.value
+                        val fileName = materialProps?.split(",")?.get(0)
+                        if (fileName != null) {
+                            val list = materialsLookupMap[fileName] ?: mutableListOf()
+                            list.add(mapObject)
+                            materialsLookupMap[fileName] = list
+                        }
+                    }
                 }
                 LACMapLineType.DOWNLOADABLE_MATERIAL -> {
                     val url = type.getValue(line)
-                    val name = url.split("/").last()
-                    val usedBy = mutableListOf<LACMapObject>()
-                    mapLines.forEachIndexed { index1, it ->
-                        val type1 = LACLibUtil.getEditorLineType(it)
-                        if (type1 == LACMapLineType.OBJECT && it.contains(" material{$name,")) {
-                            usedBy.add(LACMapObject(
-                                line = it,
-                                lineNumber = index1
-                            ))
-                        }
-                    }
                     downloadableMaterials.add(LACMapDownloadableMaterial(
                         url = url,
-                        name = name,
-                        usedBy = usedBy
+                        name = url.split("/").last(),
+                        usedBy = mutableListOf()
                     ))
                 }
                 else -> {
@@ -97,6 +105,29 @@ class LACMapEditor(
                 }
             }
         }
+
+        if (loadInParallelBatchSize > 0) {
+            IntStream.range(0, mapLines.size)
+                .parallel()
+                .mapToObj { index -> Pair(index, mapLines[index]) }
+                .parallel()
+                .collect(Collectors.groupingBy { it.first / loadInParallelBatchSize })
+                .forEach { (_, batch) ->
+                    batch.parallelStream().forEach { (index, line) ->
+                        processLine(index, line)
+                        onDebugLog("loaded line $index: $line")
+                    }
+                }
+        } else mapLines.forEachIndexed { index, line ->
+            processLine(index, line)
+        }
+
+        downloadableMaterials.forEachIndexed { index, material ->
+            downloadableMaterials[index] = material.copy(
+                usedBy = materialsLookupMap[material.name] ?: mutableListOf()
+            )
+        }
+        materialsLookupMap.clear()
     }
 
     /**
