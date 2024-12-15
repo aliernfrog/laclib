@@ -17,7 +17,8 @@ import com.aliernfrog.laclib.util.extension.matchesLine
  */
 @Suppress("MemberVisibilityCanBePrivate", "unused")
 class LACMapEditor(
-    content: String
+    content: String,
+    private val onDebugLog: (String) -> Unit = {}
 ) {
     private var mapLines = content.split("\n").toMutableList()
     var serverName: String? = null
@@ -46,22 +47,19 @@ class LACMapEditor(
                     mapRoles = type.getValue(line).removeSuffix(",").split(",").toMutableList()
                     mapRolesLine = index
                 }
-                LACMapLineType.OPTION_NUMBER -> mapOptions.add(
-                    LACMapOption(
+                LACMapLineType.OPTION_NUMBER -> mapOptions.add(LACMapOption(
                     type = LACMapOptionType.NUMBER,
                     label = type.getLabel(line)!!,
                     value = type.getValue(line),
                     line = index
                 ))
-                LACMapLineType.OPTION_BOOLEAN -> mapOptions.add(
-                    LACMapOption(
+                LACMapLineType.OPTION_BOOLEAN -> mapOptions.add(LACMapOption(
                     type = LACMapOptionType.BOOLEAN,
                     label = type.getLabel(line)!!,
                     value = type.getValue(line),
                     line = index
                 ))
-                LACMapLineType.OPTION_SWITCH -> mapOptions.add(
-                    LACMapOption(
+                LACMapLineType.OPTION_SWITCH -> mapOptions.add(LACMapOption(
                     type = LACMapOptionType.SWITCH,
                     label = type.getLabel(line)!!,
                     value = type.getValue(line),
@@ -88,8 +86,7 @@ class LACMapEditor(
                             ))
                         }
                     }
-                    downloadableMaterials.add(
-                        LACMapDownloadableMaterial(
+                    downloadableMaterials.add(LACMapDownloadableMaterial(
                         url = url,
                         name = name,
                         usedBy = usedBy
@@ -134,7 +131,9 @@ class LACMapEditor(
      */
     fun removeObjectsMatchingFilter(filter: LACMapObjectFilter): Int {
         val filtered = mapLines.filter { line ->
-            !filter.matchesLine(line)
+            val matches = filter.matchesLine(line)
+            onDebugLog("objectFilter: \"$line ->\" matches: $matches")
+            !matches
         }.toMutableList()
         val removedObjects = mapLines.size - filtered.size
         mapLines = filtered
