@@ -1,3 +1,5 @@
+import java.net.URI
+
 plugins {
     id("java-library")
     id("maven-publish")
@@ -20,6 +22,22 @@ afterEvaluate {
         publications {
             register("java", MavenPublication::class) {
                 from(components["java"])
+            }
+        }
+    }
+        
+    val githubPackagesURL = System.getenv("GITHUB_PACKAGES_URL")
+
+    if (
+        !System.getenv("GITHUB_TOKEN").isNullOrEmpty()
+        && !githubPackagesURL.isNullOrEmpty()
+    ) repositories {
+        maven {
+            name = "GitHubPackages"
+            url = URI(githubPackagesURL)
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
             }
         }
     }
