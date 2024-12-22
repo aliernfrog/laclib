@@ -14,23 +14,34 @@ import com.aliernfrog.laclib.util.extension.matchesLine
 /**
  * Initializes a LAC map editor instance.
  * @param content Content of the map
+ * @param onDebugLog [Unit] to invoke when debug log is received
  */
+@Suppress("MemberVisibilityCanBePrivate", "unused")
 class LACMapEditor(
-    content: String
+    content: String,
+    private val onDebugLog: (String) -> Unit = {}
 ) {
     private var mapLines = content.split("\n").toMutableList()
     var serverName: String? = null
     var mapType: LACMapType? = null
     var mapRoles: MutableList<String>? = null
     var mapOptions = mutableListOf<LACMapOption>()
-    var replacableObjects = mutableListOf<LACMapObject>()
+    var replaceableObjects = mutableListOf<LACMapObject>()
     var downloadableMaterials = mutableListOf<LACMapDownloadableMaterial>()
 
     private var serverNameLine: Int? = null
     private var mapTypeLine: Int? = null
     private var mapRolesLine: Int? = null
 
+    @Suppress("SpellCheckingInspection")
+    @Deprecated("This is a typo and will be removed in next major release. Use replaceableObjects instead.", ReplaceWith("replaceableObjects"))
+    var replacableObjects: MutableList<LACMapObject>
+        get() = replaceableObjects
+        set(value) { replaceableObjects = value }
+
     init {
+        val materialsLookupMap: MutableMap<String, MutableList<LACMapObject>> = mutableMapOf()
+
         mapLines.forEachIndexed { index, line ->
             when (val type = LACLibUtil.getEditorLineType(line)) {
                 LACMapLineType.SERVER_NAME -> {
@@ -38,75 +49,80 @@ class LACMapEditor(
                     serverNameLine = index
                 }
                 LACMapLineType.MAP_TYPE -> {
-                    mapType = LACMapType.values()[type.getValue(line).toInt()]
+                    mapType = LACMapType.entries[type.getValue(line).toInt()]
                     mapTypeLine = index
                 }
                 LACMapLineType.ROLES_LIST -> {
                     mapRoles = type.getValue(line).removeSuffix(",").split(",").toMutableList()
                     mapRolesLine = index
                 }
-                LACMapLineType.OPTION_NUMBER -> mapOptions.add(
-                    LACMapOption(
+                LACMapLineType.OPTION_NUMBER -> mapOptions.add(LACMapOption(
                     type = LACMapOptionType.NUMBER,
                     label = type.getLabel(line)!!,
                     value = type.getValue(line),
                     line = index
                 ))
-                LACMapLineType.OPTION_BOOLEAN -> mapOptions.add(
-                    LACMapOption(
+                LACMapLineType.OPTION_BOOLEAN -> mapOptions.add(LACMapOption(
                     type = LACMapOptionType.BOOLEAN,
                     label = type.getLabel(line)!!,
                     value = type.getValue(line),
                     line = index
                 ))
-                LACMapLineType.OPTION_SWITCH -> mapOptions.add(
-                    LACMapOption(
+                LACMapLineType.OPTION_SWITCH -> mapOptions.add(LACMapOption(
                     type = LACMapOptionType.SWITCH,
                     label = type.getLabel(line)!!,
                     value = type.getValue(line),
                     line = index
                 ))
                 LACMapLineType.OBJECT -> {
-                    val objectReplacement = LACLibUtil.findReplacementForObject(line)
-                    if (objectReplacement != null) replacableObjects.add(LACMapObject(
+                    val mapObject = LACMapObject(
                         line = line,
                         lineNumber = index,
-                        canReplaceWith = objectReplacement
-                    ))
+                        canReplaceWith = LACLibUtil.findReplacementForObject(line)
+                    )
+                    if (mapObject.canReplaceWith != null) replaceableObjects.add(mapObject)
+
+                    if (line.contains(" material{")) {
+                        val regex = Regex("material\\{(.+?)\\}")
+                        val matchResult = regex.find(line)
+                        val materialProps = matchResult?.groups?.get(1)?.value
+                        val fileName = materialProps?.split(",")?.get(0)
+                        if (fileName != null) {
+                            val list = materialsLookupMap[fileName] ?: mutableListOf()
+                            list.add(mapObject)
+                            materialsLookupMap[fileName] = list
+                        }
+                    }
                 }
                 LACMapLineType.DOWNLOADABLE_MATERIAL -> {
                     val url = type.getValue(line)
-                    val name = url.split("/").last()
-                    val usedBy = mutableListOf<LACMapObject>()
-                    mapLines.forEachIndexed { index1, it ->
-                        val type1 = LACLibUtil.getEditorLineType(it)
-                        if (type1 == LACMapLineType.OBJECT && it.contains(" material{$name,")) {
-                            usedBy.add(LACMapObject(
-                                line = it,
-                                lineNumber = index1
-                            ))
-                        }
-                    }
-                    downloadableMaterials.add(
-                        LACMapDownloadableMaterial(
+                    downloadableMaterials.add(LACMapDownloadableMaterial(
                         url = url,
-                        name = name,
-                        usedBy = usedBy
-                    )
-                    )
+                        name = url.split("/").last(),
+                        usedBy = mutableListOf()
+                    ))
                 }
-                else -> {}
+                else -> {
+                    onDebugLog("unhandled line type: $type, line at $index: $line")
+                }
             }
         }
+
+        downloadableMaterials.forEachIndexed { index, material ->
+            downloadableMaterials[index] = material.copy(
+                usedBy = materialsLookupMap[material.name] ?: mutableListOf()
+            )
+        }
+        materialsLookupMap.clear()
     }
 
     /**
-     * Replaces replacable objects.
+     * Replaces replaceable objects.
      * @return count of replaced objects
      */
     fun replaceOldObjects(): Int {
-        val replacedCount = replacableObjects.size
-        replacableObjects.forEach { mapObject ->
+        val replacedCount = replaceableObjects.size
+        replaceableObjects.forEach { mapObject ->
             val split = mapObject.line.split(":").toMutableList()
             val replacement = mapObject.canReplaceWith!!
             if (split.size < 4) split.add(3, "1.0,1.0,1.0")
@@ -115,7 +131,7 @@ class LACMapEditor(
             if (replacement.replaceColor != null) split.add(replacement.replaceColor)
             mapLines[mapObject.lineNumber] = split.joinToString(":")
         }
-        replacableObjects.clear()
+        replaceableObjects.clear()
         return replacedCount
     }
 
@@ -197,14 +213,25 @@ class LACMapEditor(
      * Applies changes to map content and returns the new content.
      */
     fun applyChanges(): String {
-        if (serverNameLine != null && serverName != null)
-            mapLines[serverNameLine!!] = LACMapLineType.SERVER_NAME.setValue(serverName!!)
-        if (mapTypeLine != null && mapType != null)
-            mapLines[mapTypeLine!!] = LACMapLineType.MAP_TYPE.setValue(mapType!!.index.toString())
-        if (mapRolesLine != null && mapRoles != null)
-            mapLines[mapRolesLine!!] = LACMapLineType.ROLES_LIST.setValue(mapRoles!!.joinToString(",").plus(","))
+        if (serverNameLine != null && serverName != null) {
+            val applied = LACMapLineType.SERVER_NAME.setValue(serverName!!)
+            onDebugLog("setting server name ($serverNameLine) ${mapLines[serverNameLine!!]} to -> $applied")
+            mapLines[serverNameLine!!] = applied
+        }
+        if (mapTypeLine != null && mapType != null) {
+            val applied = LACMapLineType.MAP_TYPE.setValue(mapType!!.index.toString())
+            onDebugLog("setting map type ($mapTypeLine) ${mapLines[mapTypeLine!!]} to -> $applied")
+            mapLines[mapTypeLine!!] = applied
+        }
+        if (mapRolesLine != null && mapRoles != null) {
+            val applied = LACMapLineType.ROLES_LIST.setValue(mapRoles!!.joinToString(",").plus(","))
+            onDebugLog("setting map roles ($mapRolesLine) ${mapLines[mapRolesLine!!]} to -> $applied")
+            mapLines[mapRolesLine!!] = applied
+        }
         mapOptions.forEach { option ->
-            mapLines[option.line] = LACMapLineType.OPTION_GENERAL.setValue(option.value, option.label)
+            val applied = LACMapLineType.OPTION_GENERAL.setValue(option.value, option.label)
+            onDebugLog("setting map option ${option.label}:${option.value} (${option.line}) to -> $applied")
+            mapLines[option.line] = applied
         }
         return getCurrentContent()
     }
