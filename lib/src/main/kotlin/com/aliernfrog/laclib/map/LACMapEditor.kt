@@ -98,7 +98,9 @@ class LACMapEditor(
                     val url = type.getValue(line)
                     downloadableMaterials.add(LACMapDownloadableMaterial(
                         url = url,
-                        name = url.split("/").last(),
+                        name = (url.split("/").lastOrNull() ?: url).let {
+                            it.split("?").firstOrNull() ?: it
+                        },
                         usedBy = mutableListOf()
                     ))
                 }
