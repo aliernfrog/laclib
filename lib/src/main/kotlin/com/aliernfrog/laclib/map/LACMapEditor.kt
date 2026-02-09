@@ -53,7 +53,10 @@ class LACMapEditor(
                     mapTypeLine = index
                 }
                 LACMapLineType.ROLES_LIST -> {
-                    mapRoles = type.getValue(line).removeSuffix(",").split(",").toMutableList()
+                    mapRoles = type.getValue(line).removeSuffix(",").let { rolesStr ->
+                        if (rolesStr.isBlank()) mutableListOf()
+                        else rolesStr.split(",").toMutableList()
+                    }
                     mapRolesLine = index
                 }
                 LACMapLineType.OPTION_NUMBER -> mapOptions.add(LACMapOption(
