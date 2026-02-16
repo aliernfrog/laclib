@@ -65,6 +65,12 @@ class LACMapEditor(
                     value = type.getValue(line),
                     line = index
                 ))
+                LACMapLineType.OPTION_FLOAT -> mapOptions.add(LACMapOption(
+                    type = LACMapOptionType.FLOAT,
+                    label = type.getLabel(line)!!,
+                    value = type.getValue(line),
+                    line = index
+                ))
                 LACMapLineType.OPTION_BOOLEAN -> mapOptions.add(LACMapOption(
                     type = LACMapOptionType.BOOLEAN,
                     label = type.getLabel(line)!!,
