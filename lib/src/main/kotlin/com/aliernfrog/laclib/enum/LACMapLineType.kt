@@ -38,11 +38,28 @@ enum class LACMapLineType(
     },
 
     /**
-     * Number options have numbers as value.
+     * Number options can have numbers as value.
      */
     OPTION_NUMBER {
         override fun matches(line: String): Boolean {
             return OPTION_GENERAL.matches(line) && OPTION_GENERAL.getValue(line).toIntOrNull() != null
+        }
+
+        override fun getValue(line: String): String {
+            return OPTION_GENERAL.getValue(line)
+        }
+
+        override fun getLabel(line: String): String? {
+            return OPTION_GENERAL.getLabel(line)
+        }
+    },
+
+    /**
+     * Float options can have floats as value.
+     */
+    OPTION_FLOAT {
+        override fun matches(line: String): Boolean {
+            return OPTION_GENERAL.matches(line) && OPTION_GENERAL.getValue(line).toFloatOrNull() != null
         }
 
         override fun getValue(line: String): String {
@@ -121,8 +138,8 @@ enum class LACMapLineType(
 
     OPTION_GENERAL(ignoreWhenFiltering = true) {
         override fun matches(line: String) = line.split(": ").size == 2
-        override fun getValue(line: String) = line.split(": ")[1]
-        override fun setValue(value: String, label: String?) = "$label: $value"
+        override fun getValue(line: String) = line.split(": ")[1].trim()
+        override fun setValue(value: String, label: String?) = "$label: ${value.trim()}"
         override fun getLabel(line: String) = line.split(": ")[0]
     },
 
