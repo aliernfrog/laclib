@@ -25,12 +25,14 @@ class LACMapEditor(
     var serverName: String? = null
     var mapType: LACMapType? = null
     var mapRoles: MutableList<String>? = null
+    var aiNavmeshObjects: MutableList<String>? = null
     var mapOptions = mutableListOf<LACMapOption>()
     var replaceableObjects = mutableListOf<LACMapObject>()
     var downloadableMaterials = mutableListOf<LACMapDownloadableMaterial>()
 
     private var serverNameLine: Int? = null
     private var mapTypeLine: Int? = null
+    private var aiNavmeshObjectsLine: Int? = null
     private var mapRolesLine: Int? = null
 
     @Suppress("SpellCheckingInspection")
@@ -51,6 +53,13 @@ class LACMapEditor(
                 LACMapLineType.MAP_TYPE -> {
                     mapType = LACMapType.entries[type.getValue(line).toInt()]
                     mapTypeLine = index
+                }
+                LACMapLineType.AI_NAVMESH -> {
+                    aiNavmeshObjects = type.getValue(line).trim().removeSuffix(",").let { aiNavmeshStr ->
+                        if (aiNavmeshStr.isBlank()) mutableListOf()
+                        else aiNavmeshStr.split(",").toMutableList()
+                    }
+                    aiNavmeshObjectsLine = index
                 }
                 LACMapLineType.ROLES_LIST -> {
                     mapRoles = type.getValue(line).removeSuffix(",").let { rolesStr ->
@@ -233,6 +242,11 @@ class LACMapEditor(
             val applied = LACMapLineType.MAP_TYPE.setValue(mapType!!.index.toString())
             onDebugLog("setting map type ($mapTypeLine) ${mapLines[mapTypeLine!!]} to -> $applied")
             mapLines[mapTypeLine!!] = applied
+        }
+        if (aiNavmeshObjectsLine != null && aiNavmeshObjects != null) {
+            val applied = LACMapLineType.AI_NAVMESH.setValue(aiNavmeshObjects!!.joinToString(",").plus(","))
+            onDebugLog("setting ai navmesh objects ($aiNavmeshObjectsLine) ${mapLines[aiNavmeshObjectsLine!!]} to -> $applied")
+            mapLines[aiNavmeshObjectsLine!!] = applied
         }
         if (mapRolesLine != null && mapRoles != null) {
             val applied = LACMapLineType.ROLES_LIST.setValue(mapRoles!!.joinToString(",").plus(","))

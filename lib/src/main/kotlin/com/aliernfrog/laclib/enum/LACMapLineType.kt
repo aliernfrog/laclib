@@ -27,6 +27,13 @@ enum class LACMapLineType(
         override fun setValue(value: String, label: String?) = "$startsWith$value"
     },
 
+    AI_NAVMESH {
+        private val startsWith = "Bake AI Navmesh:"
+        override fun matches(line: String) = line.startsWith(startsWith)
+        override fun getValue(line: String) = line.removePrefix(startsWith)
+        override fun setValue(value: String, label: String?) = "$startsWith$value"
+    },
+
     /**
      * Contains list of roles separated with a comma.
      */
